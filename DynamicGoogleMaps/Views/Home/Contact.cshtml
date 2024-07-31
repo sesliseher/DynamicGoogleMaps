@@ -1,0 +1,60 @@
+﻿@model DynamicGoogleMaps.Models.MapViewModel
+
+@{
+    ViewData["Title"] = "Contact";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewData["Title"]</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            function loadMap(address) {
+                var embed = "<iframe width='425' height='350' frameborder='0' " +
+                    "scrolling='no' marginheight='0' marginwidth='0' " +
+                    "src='https://maps.google.com/maps?&q=" +
+                    encodeURIComponent(address) +
+                    "&output=embed'></iframe>";
+                $('.place').html(embed);
+            }
+
+            // Model adres bilgisi varsa, haritayı yükle
+            var addr = '@Model.Address';
+            if (addr) {
+                loadMap(addr);
+            }
+
+            // Form submit edildikten sonra haritayı yeniden yükle
+            $('#addressForm').submit(function (event) {
+                event.preventDefault(); // Formun default submit işlemini engelle
+
+                var address = $('#Address').val(); // Formdan adresi al
+                loadMap(address); // Haritayı yükle
+
+                // Formu backend'e POST et
+                $.post($(this).attr('action'), $(this).serialize(), function (data) {
+                    // Başarılı bir POST işleminden sonra geri dön
+                    $('.place').html(data);
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Contact Us</h1>
+
+    <!-- Formu güncelliyoruz -->
+    <form id="addressForm" asp-action="Contact" method="post">
+        <div>
+            <label for="Address">Enter Address:</label>
+            <input type="text" id="Address" name="Address" value="@Model.Address" />
+        </div>
+        <button type="submit">Show on Map</button>
+    </form>
+
+    <!-- Harita buraya yüklenecek -->
+    <div class="place"></div>
+</body>
+</html>
